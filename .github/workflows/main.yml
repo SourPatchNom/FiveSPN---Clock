@@ -1,0 +1,19 @@
+name: Copy
+ 
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Copycat
+      uses: andstor/copycat-action@v3
+      with:
+        personal_token: ${{ secrets.PERSONAL_TOKEN }}
+        src_path: FiveMResource/.
+        dst_path: resources/[FiveSPN]/
+        dst_owner: SourPatchNom
+        dst_repo_name: FiveSPN---Suite
+        commit_message: FiveSPN-Clock Update
