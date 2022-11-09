@@ -11,11 +11,11 @@ namespace FiveSpn.Clock.Client
         private readonly bool _verboseLogs;
         private int _utcOffsetServerSetting = 0; //Offset for in game time
         private int _utcOffsetClientFromGameServer = 0; //Users offset from game servers UTC
-        private readonly float _timeScale;
+        private float _timeScale;
 
         public Service()
         {
-            if (API.GetResourceMetadata(API.GetCurrentResourceName(), "verbose_logging", 0) == "true") _verboseLogs = true;
+            if (API.GetResourceMetadata(API.GetCurrentResourceName(), "verbose_logs", 0) == "true") _verboseLogs = true;
             if (!int.TryParse(API.GetResourceMetadata(API.GetCurrentResourceName(), "utc_offset", 0), out _utcOffsetServerSetting)) _utcOffsetServerSetting = 0;
             _utcOffsetServerSetting = _utcOffsetServerSetting < 0 ? _utcOffsetServerSetting *= -1: _utcOffsetServerSetting; //Prevent admin setting to negative number.
                 
@@ -23,12 +23,14 @@ namespace FiveSpn.Clock.Client
             
             EventHandlers.Add("playerSpawned", new Action<Vector3>(OnPlayerSpawned));
             EventHandlers["FiveSPN-Clock-SetUtcOffset"] += new Action<int>(SetGeneralUtcOffset);
+            EventHandlers["FiveSPN-Clock-SetTimeScale"] += new Action<float>(SetTimeScale);
             EventHandlers["FiveSPN-Clock-ClientUtcConfirm"] += new Action<int>(SetClientServerUtcOffset);
 
             API.RegisterCommand("VerifyTime", new Action<int, List<object>, string>((source, args, raw) =>
             {
                 TriggerServerEvent("FiveSPN-Clock-VerifyUtcOffset");
                 TriggerServerEvent("FiveSPN-Clock-VerifyClientUtc", DateTime.UtcNow.Hour);
+                TriggerServerEvent("FiveSPN-Clock-VerifyTimeScale");
             }), false);
 
             API.RegisterCommand("SetTimeOffset", new Action<int, List<object>, string>((source, args, raw) =>
@@ -49,9 +51,32 @@ namespace FiveSpn.Clock.Client
                 }
             }), false);
 
+            API.RegisterCommand("SetTimeScale", new Action<int, List<object>, string>((source, args, raw) =>
+            {
+                if (args.Count == 1)
+                {
+                    try
+                    {
+                        if (float.TryParse(args[0].ToString(), out float scale))
+                        {
+                            TriggerServerEvent("FiveSPN-Clock-SetTimeScale", scale);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+            }), false);
+            
             Tick += OnTick;
         }
-        
+
+        private void SetTimeScale(float newScale)
+        {
+            _timeScale = newScale;
+        }
+
         private void SetClientServerUtcOffset(int setOffset)
         {
             _utcOffsetClientFromGameServer = setOffset;

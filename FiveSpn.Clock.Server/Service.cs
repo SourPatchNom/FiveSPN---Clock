@@ -10,7 +10,7 @@ namespace FiveSpn.Clock.Server
         private readonly bool _verboseLogs;
         
         private int _serverUtcOffset = 0;
-        private float _timeScale = 0;
+        private float _serverScale = 0;
         
         public Service()
         {
@@ -19,7 +19,7 @@ namespace FiveSpn.Clock.Server
             
             if(!int.TryParse(API.GetResourceMetadata(API.GetCurrentResourceName(), "utc_offset", 0),out _serverUtcOffset)) _serverUtcOffset = 0;
             _serverUtcOffset = _serverUtcOffset < 0 ? _serverUtcOffset *= -1: _serverUtcOffset; //Prevent admin setting to negative number.
-            if(!float.TryParse(API.GetResourceMetadata(API.GetCurrentResourceName(), "time_scale", 0),out _timeScale)) _timeScale = 0;
+            if(!float.TryParse(API.GetResourceMetadata(API.GetCurrentResourceName(), "time_scale", 0),out _serverScale)) _serverScale = 0;
             
             if (_verboseLogs)
             {
@@ -31,9 +31,20 @@ namespace FiveSpn.Clock.Server
 
             EventHandlers["FiveSPN-Clock-VerifyClientUtc"] += new Action<Player, int>(VerifyClientUtcHour);
             EventHandlers["FiveSPN-Clock-VerifyUtcOffset"] += new Action<Player>(VerifyUtcOffset);
+            EventHandlers["FiveSPN-Clock-VerifyTimeScale"] += new Action<Player>(VerifyTimeScale);
             EventHandlers["FiveSPN-Clock-SetUtcOffset"] += new Action<Player, int>(SetUtcOffset);
+            EventHandlers["FiveSPN-Clock-SetTimeScale"] += new Action<Player, float>(SetTimeScale);
         }
-        
+
+
+
+        private void SetTimeScale([FromSource]Player player, float scale)
+        {
+            TriggerEvent("FiveSPN-LogToServer", API.GetCurrentResourceName(), 4, "Server time scale update requested by " + player.Name + " to " + scale.ToString());
+            if (!CheckPermsNow(player)) return;
+            UpdateScale(scale);
+        }
+
         private void SetUtcOffset([FromSource] Player player, int newOffset)
         {
             TriggerEvent("FiveSPN-LogToServer", API.GetCurrentResourceName(), 4, "Server UTC offset update requested by " + player.Name + " to " + newOffset.ToString());
@@ -45,14 +56,24 @@ namespace FiveSpn.Clock.Server
         {
             _serverUtcOffset = ValidateOffset(newOffset);
             TriggerClientEvent("FiveSPN-Clock-SetUtcOffset", _serverUtcOffset);
-            TriggerEvent("FiveSPN-LogToServer", API.GetCurrentResourceName(),4,"New server hour is " + ((DateTime.UtcNow.Hour + _serverUtcOffset) %24).ToString());
-            
+        }
+        
+        private void UpdateScale(float newScale)
+        {
+            _serverScale = ValidateScale(newScale);
+            TriggerClientEvent("FiveSPN-Clock-SetTimeScale", _serverScale);
         }
 
         private int ValidateOffset(int newOffset)
         {
             newOffset = newOffset < 0 ? newOffset * -1 : newOffset;
             return newOffset % 24;
+        }
+        
+        private float ValidateScale(float newScale)
+        {
+            newScale = newScale <= 1 ? newScale = 1 : newScale;
+            return newScale;
         }
         
         private void VerifyUtcOffset([FromSource]Player player)
@@ -79,6 +100,11 @@ namespace FiveSpn.Clock.Server
                 int returnOffset = (currentServerUtcHour + 24 - currentClientUtcHour) % 24;
                 TriggerClientEvent(player,"FiveSPN-Clock-ClientUtcConfirm", returnOffset);
             }
+        }
+        
+        private void VerifyTimeScale([FromSource]Player player)
+        {
+            TriggerClientEvent(player, "FiveSPN-Clock-SetTimeScale", _serverScale);
         }
         
         private static bool CheckPermsNow([FromSource] Player player)
