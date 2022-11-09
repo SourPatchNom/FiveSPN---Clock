@@ -1,5 +1,7 @@
 # FiveSPN-Clock
 
+![FiveSPN-Clock Banner](https://cdn.discordapp.com/attachments/1039941709473259601/1039991043963232376/fivespnclock.png)
+
 FiveSPN-Clock is a FiveM server resource that will sync all players game time to a real world time, or a scaled time. Want the server to be evening everyday at noon? Want longer day night cycles? This is your answer! 
 
 ## Installation
