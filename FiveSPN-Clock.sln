@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiveSpn.Clock.Client", "FiveSpn.Clock.Client\FiveSpn.Clock.Client.csproj", "{9195ACAD-F12C-471F-AB3D-DE7638604A66}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiveSpn.Clock.Client", "src\FiveSpn.Clock.Client\FiveSpn.Clock.Client.csproj", "{9195ACAD-F12C-471F-AB3D-DE7638604A66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiveSpn.Clock.Server", "FiveSpn.Clock.Server\FiveSpn.Clock.Server.csproj", "{414A334E-BF86-4584-BD2C-CB21B138AAA8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiveSpn.Clock.Server", "src\FiveSpn.Clock.Server\FiveSpn.Clock.Server.csproj", "{414A334E-BF86-4584-BD2C-CB21B138AAA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
