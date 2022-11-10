@@ -23,10 +23,11 @@ namespace FiveSpn.Clock.Server
             
             if (_verboseLogs)
             {
+                var utcTime = DateTime.UtcNow;
                 TriggerEvent("FiveSPN-LogToServer", API.GetCurrentResourceName(),4,"Server offset is " + _serverUtcOffset);
-                var currentHour = ((DateTime.UtcNow.Hour + _serverUtcOffset) % 24).ToString();
+                var currentHour = ((utcTime.Hour + _serverUtcOffset) % 24).ToString();
                 TriggerEvent("FiveSPN-LogToServer", API.GetCurrentResourceName(),4,"New server hour is " + currentHour);
-                TriggerEvent("FiveSPN-LogToDiscord", true, API.GetCurrentResourceName(),"The server time is " + currentHour +":"+ DateTime.UtcNow.Minute.ToString("00"));    
+                TriggerEvent("FiveSPN-LogToDiscord", true, API.GetCurrentResourceName(),"The server time is " + currentHour +":"+ utcTime.Minute.ToString("00"));    
             }
 
             EventHandlers["FiveSPN-Clock-VerifyClientUtc"] += new Action<Player, int>(VerifyClientUtcHour);
@@ -83,12 +84,13 @@ namespace FiveSpn.Clock.Server
 
         private void VerifyClientUtcHour([FromSource]Player player, int currentClientUtcHour)
         {
-            int currentServerUtcHour = DateTime.UtcNow.Hour;
+            var utcTime = DateTime.UtcNow;
+            int currentServerUtcHour = utcTime.Hour;
             if (currentServerUtcHour == currentClientUtcHour)
             {
                 TriggerClientEvent(player,"FiveSPN-Clock-ClientUtcConfirm", 0);
             }
-            else if (DateTime.UtcNow.Minute == 0 && DateTime.UtcNow.Second < 5) //Could the event tx at x:59 and rx x:00
+            else if (utcTime.Minute == 0 && utcTime.Second < 5) //Could the event tx at x:59 and rx x:00
             {
                 if (currentServerUtcHour == 0 && currentClientUtcHour == 23 || currentServerUtcHour == currentClientUtcHour + 1)
                 {

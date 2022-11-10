@@ -98,19 +98,20 @@ namespace FiveSpn.Clock.Client
         {
             try
             {
-                int hourNoScale = (DateTime.UtcNow.Hour + _utcOffsetServerSetting + _utcOffsetClientFromGameServer) % 24;
+                DateTime utcTime = DateTime.UtcNow;
+                int hourNoScale = (utcTime.Hour + _utcOffsetServerSetting + _utcOffsetClientFromGameServer) % 24;
                 hourNoScale = hourNoScale == 24 ? hourNoScale = 0 : hourNoScale;
                 
                 if (_timeScale <= 1)
                 {
-                    API.NetworkOverrideClockTime(hourNoScale,DateTime.UtcNow.Minute,DateTime.UtcNow.Second);
+                    API.NetworkOverrideClockTime(hourNoScale,utcTime.Minute,utcTime.Second);
                     await Task.FromResult(1);
                     return;
                 }
                 
-                int totalSecondsElapsedIrl = (hourNoScale * 60 * 60) + (DateTime.UtcNow.Minute * 60) + DateTime.UtcNow.Second;
+                int totalSecondsElapsedIrl = (hourNoScale * 60 * 60) + (utcTime.Minute * 60) + utcTime.Second;
                 float timeScaleMultiplier = _timeScale <= 1 ? 1 : _timeScale;
-                DateTime dateTime = DateTime.Today.AddSeconds(totalSecondsElapsedIrl * timeScaleMultiplier);
+                DateTime dateTime = utcTime.Date.AddSeconds(totalSecondsElapsedIrl * timeScaleMultiplier);
 
                 if (_verboseLogs) Debug.WriteLine(dateTime.Hour+"|"+dateTime.Minute+"|"+dateTime.Second);
                 API.NetworkOverrideClockTime(dateTime.Hour,dateTime.Minute,dateTime.Second);
